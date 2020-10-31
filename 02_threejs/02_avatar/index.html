@@ -1,0 +1,69 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="/style.css">
+
+    <title>Three JS</title>
+  </head>
+  <body>
+    <script type="module">
+        import { Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh,
+                SphereGeometry, MeshNormalMaterial, Clock } from './node_modules/three/build/three.module.js';
+        
+        var scene = new Scene();
+        var camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, 0.1 /* near clip */, 1000 /* far clip */);
+        camera.position.z = 500;
+        var renderer = new WebGLRenderer();
+        renderer.setSize(window.innerWidth * .995, window.innerHeight *.995);
+        document.body.appendChild( renderer.domElement );
+
+        // avatar material
+        var cover = new MeshNormalMaterial({ flatShading: true });
+
+        // body
+        var body = new SphereGeometry(100);
+        var avatar = new Mesh(body, cover);
+        scene.add(avatar);
+
+        // right and left hand
+        var hand = new SphereGeometry(50);
+        var right_hand = new Mesh(hand, cover);
+        var left_hand = new Mesh(hand, cover);
+        right_hand.position.set(-150, 0, 0);
+        left_hand.position.set(150, 0, 0);
+        avatar.add(right_hand);
+        avatar.add(left_hand);
+
+        // right and left foot
+        var foot = new SphereGeometry(50);
+        var right_foot = new Mesh(foot, cover);
+        var left_foot = new Mesh(foot, cover);
+        right_foot.position.set(-75, -125, 0);
+        left_foot.position.set(75, -125, 0);
+        avatar.add(right_foot);
+        avatar.add(left_foot);
+
+        var clock = new Clock();
+
+        var is_cartwheeling = false;
+
+        function animate()
+        {
+            requestAnimationFrame(animate);
+            var t = clock.getElapsedTime();
+        
+            if (is_cartwheeling) {
+              avatar.rotation.z += .05;
+            }
+	      
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+  </body>
+</html>
