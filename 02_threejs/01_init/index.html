@@ -13,21 +13,22 @@
   <body>
     <script type="module">
         import { Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh,
-        SphereGeometry, MeshNormalMaterial, Clock } from './node_modules/three/build/three.module.js';
+                SphereGeometry, MeshNormalMaterial, Clock } from './node_modules/three/build/three.module.js';
+        
         var scene = new Scene();
         var camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, 0.1 /* near clip */, 1000 /* far clip */);
         var renderer = new WebGLRenderer();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(window.innerWidth * .995, window.innerHeight *.995);
         document.body.appendChild( renderer.domElement );
 
         var geometry = new BoxGeometry();
-        var material = new MeshBasicMaterial({ color: 0x00ff00 });
+        var material = new MeshBasicMaterial({ color: 0x33aa44, flatShading: true });
         var cube = new Mesh(geometry, material);
         cube.position.x = -2;
         scene.add(cube);
 
         var sphereGeometry = new SphereGeometry();
-        var sphereMaterial = new MeshNormalMaterial();
+        var sphereMaterial = new MeshNormalMaterial({ flatShading: true });
         var sphere = new Mesh(sphereGeometry, sphereMaterial);
         sphere.position.x = 2;
         scene.add(sphere);
@@ -36,13 +37,16 @@
 
         var clock = new Clock();
 
-        function animate() {
+        function animate()
+        {
             requestAnimationFrame(animate);
             var t = clock.getElapsedTime();
+        
             cube.rotation.x = t;
             cube.rotation.y = 2*t;
             sphere.rotation.set(t, 2*t, 0);
-	        renderer.render(scene, camera);
+	      
+            renderer.render(scene, camera);
         }
         animate();
     </script>
