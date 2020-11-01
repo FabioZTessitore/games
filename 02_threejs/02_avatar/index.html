@@ -12,8 +12,7 @@
   </head>
   <body>
     <script type="module">
-        import { Scene, PerspectiveCamera, WebGLRenderer, BoxGeometry, MeshBasicMaterial, Mesh,
-                SphereGeometry, MeshNormalMaterial, Clock } from './node_modules/three/build/three.module.js';
+        import { Scene, PerspectiveCamera, WebGLRenderer, MeshNormalMaterial, SphereGeometry, Mesh, Clock } from './node_modules/three/build/three.module.js';
         
         var scene = new Scene();
         var camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, 0.1 /* near clip */, 1000 /* far clip */);
@@ -50,7 +49,7 @@
 
         var clock = new Clock();
 
-        var is_cartwheeling = false;
+        var is_cartwheeling = true;
         var is_flipping = true;
 
         function animate()
