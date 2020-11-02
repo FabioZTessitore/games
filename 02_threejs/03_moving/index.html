@@ -1,0 +1,112 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="/style.css">
+
+    <title>Three JS</title>
+  </head>
+  <body>
+    <script type="module">
+        import { Scene, PerspectiveCamera, WebGLRenderer, MeshNormalMaterial, MeshBasicMaterial,
+              Object3D, SphereGeometry, CylinderGeometry, Mesh, Clock } from './node_modules/three/build/three.module.js';
+
+        var scene = new Scene();
+        var camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, 0.1 /* near clip */, 10000 /* far clip */);
+        camera.position.z = 500;
+        var renderer = new WebGLRenderer();
+        renderer.setSize(window.innerWidth * .995, window.innerHeight *.995);
+        document.body.appendChild( renderer.domElement );
+
+        // marker
+        var marker = new Object3D();
+        marker.add(camera);
+        scene.add(marker);
+
+        // avatar material
+        var cover = new MeshNormalMaterial({ flatShading: true });
+
+        // body
+        var body = new SphereGeometry(100);
+        var avatar = new Mesh(body, cover);
+        marker.add(avatar);
+
+        // right and left hand
+        var hand = new SphereGeometry(50);
+        var right_hand = new Mesh(hand, cover);
+        var left_hand = new Mesh(hand, cover);
+        right_hand.position.set(-150, 0, 0);
+        left_hand.position.set(150, 0, 0);
+        avatar.add(right_hand);
+        avatar.add(left_hand);
+
+        // right and left foot
+        var foot = new SphereGeometry(50);
+        var right_foot = new Mesh(foot, cover);
+        var left_foot = new Mesh(foot, cover);
+        right_foot.position.set(-75, -125, 0);
+        left_foot.position.set(75, -125, 0);
+        avatar.add(right_foot);
+        avatar.add(left_foot);
+
+        // trees
+        function makeTreeAt (x, z) {
+          var trunk = new Mesh(
+            new CylinderGeometry(50, 50, 200, 7),
+            new MeshBasicMaterial({ color: 0xA0522D, flatShading: true })
+          );
+          var top = new Mesh(
+            new SphereGeometry(150),
+            new MeshBasicMaterial({ color: 0x228B22, flatShading: true })
+          );
+          top.position.y = 175;
+          trunk.add(top);
+          trunk.position.set(x, -75, z);
+          scene.add(trunk);
+        }
+        makeTreeAt(500, 0);
+        makeTreeAt(-500, 0);
+        makeTreeAt(750, -1000);
+        makeTreeAt(-750, -1000);
+
+        var clock = new Clock();
+
+        var is_cartwheeling = false;
+        var is_flipping = false;
+
+        function animate()
+        {
+            requestAnimationFrame(animate);
+            var t = clock.getElapsedTime();
+        
+            if (is_cartwheeling) {
+              avatar.rotation.z += .05;
+            }
+	      
+            if (is_flipping) {
+              avatar.rotation.x += .05;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // handling events
+        document.addEventListener('keydown', function (event) {
+          var code = event.keyCode;
+          
+          if (code == 37) marker.position.x -= 5; // left
+          if (code == 39) marker.position.x += 5; // right
+          if (code == 38) marker.position.z -= 5; // up
+          if (code == 40) marker.position.z += 5; // down
+
+          if (code == 67) is_cartwheeling = !is_cartwheeling; // c
+          if (code == 70) is_flipping = !is_flipping;         // f
+        });
+    </script>
+  </body>
+</html>
