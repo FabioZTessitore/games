@@ -1,0 +1,369 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="/style.css">
+
+    <script src="http://gamingJS.com/Scoreboard.js"></script>
+    <!-- <script src="Sounds.js"></script> -->
+
+    <title>Three JS</title>
+  </head>
+  <body>
+    <script type="module">
+        import { Scene, PerspectiveCamera, WebGLRenderer, MeshNormalMaterial, MeshBasicMaterial,
+              Object3D, SphereGeometry, CylinderGeometry, CircleGeometry, Mesh, Clock, Vector3, Raycaster } from './node_modules/three/build/three.module.js';
+        import Tween from './node_modules/@tweenjs/tween.js/dist/tween.esm.js';
+
+        var scene = new Scene();
+        var camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, 0.1 /* near clip */, 10000 /* far clip */);
+        camera.position.z = 500;
+        var renderer = new WebGLRenderer();
+        renderer.setSize(window.innerWidth * .995, window.innerHeight *.995);
+        document.body.appendChild( renderer.domElement );
+
+        // marker
+        var marker = new Object3D();
+        marker.add(camera);
+        scene.add(marker);
+
+        // avatar material
+        var cover = new MeshNormalMaterial({ flatShading: true });
+
+        // body
+        var body = new SphereGeometry(100);
+        var avatar = new Mesh(body, cover);
+        marker.add(avatar);
+
+        // right and left hand
+        var hand = new SphereGeometry(50);
+        var right_hand = new Mesh(hand, cover);
+        var left_hand = new Mesh(hand, cover);
+        right_hand.position.set(-150, 0, 0);
+        left_hand.position.set(150, 0, 0);
+        avatar.add(right_hand);
+        avatar.add(left_hand);
+
+        // right and left foot
+        var foot = new SphereGeometry(50);
+        var right_foot = new Mesh(foot, cover);
+        var left_foot = new Mesh(foot, cover);
+        right_foot.position.set(-75, -125, 0);
+        left_foot.position.set(75, -125, 0);
+        avatar.add(right_foot);
+        avatar.add(left_foot);
+
+        // forbidden boundaries
+        var not_allowed = [];
+
+        // scoreboard
+        var scoreboard = new Scoreboard();
+        scoreboard.countdown(45);
+        scoreboard.score();
+        scoreboard.help(
+          'Arrow keys to move. ' +
+          'Space bar to jump for fruit. ' +
+          'Watch for shaking trees with fruit.' +
+          'Get near the tree and jump before the fruit is gone!'
+        );
+
+        var game_over = false;
+        scoreboard.onTimeExpired(function() {
+          scoreboard.message("Game Over!");
+          game_over = true;
+        });
+
+        // trees
+        function makeTreeAt (x, z) {
+          var trunk = new Mesh(
+            new CylinderGeometry(50, 50, 200, 7),
+            new MeshBasicMaterial({ color: 0xA0522D, flatShading: true })
+          );
+          var top = new Mesh(
+            new SphereGeometry(150),
+            new MeshBasicMaterial({ color: 0x228B22, flatShading: true })
+          );
+          top.position.y = 175;
+          trunk.add(top);
+          trunk.position.set(x, -75, z);
+          
+          // make the boundary
+          var boundary = new Mesh(
+            new CircleGeometry(300),
+            cover
+          );
+          boundary.position.y = -100;
+          boundary.rotation.x = -Math.PI/2;
+          trunk.add(boundary);
+            
+          scene.add(trunk);
+          
+          not_allowed.push(boundary);
+
+          return top;
+        }
+        var tree_with_treasure;
+        var trees = [];
+        trees.push(makeTreeAt( 500, 0));
+        trees.push(makeTreeAt(-500, 0));
+        trees.push(makeTreeAt( 750, -1000));
+        trees.push(makeTreeAt(-750, -1000));
+
+        function shakeTree() {
+          tree_with_treasure = Math.floor(Math.random() * trees.length);
+          new Tween
+            .Tween({x: 0})
+            .to({x: 2*Math.PI}, 200)
+            .repeat(20)
+            .onUpdate(function (obj) {
+              trees[tree_with_treasure].position.x = 75 * Math.sin(obj.x);
+            })
+            .start();
+
+          setTimeout(shakeTree, 12*1000);
+        }
+        shakeTree();
+
+        var clock = new Clock();
+
+        // move arms and legs while walking
+        function walk(t)
+        {
+          var omega = 7;
+          var amplitude = 70;
+
+          var position;
+          if (!is_walking()) {
+            position = 0;
+          } else {
+            position = amplitude * Math.sin(omega*t);
+          }
+
+          left_hand.position.z = position;
+          right_hand.position.z = -position;
+          left_foot.position.z = -position;
+          right_foot.position.z = position;
+        }
+
+        // check if is walking
+        var is_moving_left, is_moving_right, is_moving_forward, is_moving_back;
+        function is_walking()
+        {
+          if (is_moving_left || is_moving_back || is_moving_forward || is_moving_right)
+            return true;
+
+          return false;
+        }
+
+        // turn
+        function turn()
+        {
+          var direction = 0;
+
+          if (is_moving_back) direction = 0;
+          if (is_moving_forward) direction = Math.PI;
+          if (is_moving_left) direction = -Math.PI/2;
+          if (is_moving_right) direction = Math.PI/2;
+
+          spinAvatar(direction);
+        }
+        //
+        function spinAvatar(direction)
+        {
+          new Tween
+            .Tween({ y: avatar.rotation.y })
+            .to({ y: direction }, 100)
+            .onUpdate( function (obj) {
+              avatar.rotation.y = obj.y;
+            })
+            .start();
+        }
+
+        // make acrobatics
+        var is_cartwheeling = false;
+        var is_flipping = false;
+        function acrobatics()
+        {
+          if (is_cartwheeling) {
+              avatar.rotation.z += .05;
+            }
+	      
+            if (is_flipping) {
+              avatar.rotation.x += .05;
+            }
+        }
+
+        function animate()
+        {
+          requestAnimationFrame(animate);
+          var t = clock.getElapsedTime();
+          
+          Tween.update();
+          walk(t);
+          turn();
+          acrobatics();
+          
+          renderer.render(scene, camera);
+        }
+        animate();
+
+        // handling events
+        document.addEventListener('keydown', function (event) {
+          var code = event.keyCode;
+          
+          // left
+          if (code == 37) {
+            marker.position.x -= 5;
+            is_moving_left = true;
+          }
+
+          // right
+          if (code == 39) {
+            marker.position.x += 5;
+            is_moving_right = true;
+          }
+
+          // up
+          if (code == 38) {
+            marker.position.z -= 5;
+            is_moving_forward = true;
+          }
+
+          // down
+          if (code == 40) {
+            marker.position.z += 5;
+            is_moving_back = true;
+          }
+
+          if (code == 67) is_cartwheeling = !is_cartwheeling; // c
+          if (code == 70) is_flipping = !is_flipping;         // f
+
+          if (detectCollisions()) {
+            if (is_moving_left) marker.position.x += 5;
+            if (is_moving_right) marker.position.x -= 5;
+            if (is_moving_forward) marker.position.z += 5;
+            if (is_moving_back) marker.position.z -= 5;
+          }
+
+          // space
+          if (code == 32) jump();
+        });
+
+        document.addEventListener('keyup', function (event) {
+          var code = event.keyCode;
+
+          // left
+          if (code == 37) {
+            is_moving_left = false;
+          }
+
+          // right
+          if (code == 39) {
+            is_moving_right = false;
+          }
+
+          // up
+          if (code == 38) {
+            is_moving_forward = false;
+          }
+
+          // down
+          if (code == 40) {
+            is_moving_back = false;
+          }
+        });
+
+        function detectCollisions()
+        {
+          var vector = new Vector3(0, -1, 0);
+          var ray = new Raycaster(marker.position, vector);
+          var intersects = ray.intersectObjects(not_allowed);
+          if (intersects.length > 0) return true;
+
+          return false;
+        }
+
+        var is_jumping = false;
+        function jump() {
+          if (is_jumping) return;
+
+          is_jumping = true;
+          checkForTreasure();
+          animateJump();
+        }
+
+        function checkForTreasure() {
+          if (tree_with_treasure == undefined) return;
+
+          var treasure_tree = trees[tree_with_treasure];
+          var p1 = treasure_tree.parent.position;
+          var p2 = marker.position;
+
+          var distance = Math.sqrt(
+            (p1.x - p2.x)*(p1.x - p2.x) +
+            (p1.z - p2.z)*(p1.z - p2.z)
+          );
+          
+          if (distance < 500) {
+            scorePoints();
+          }
+        }
+
+        function scorePoints() {
+          if (scoreboard.getTimeRemaining() === 0) return;
+          
+          scoreboard.addPoints(10);
+          // Sounds.bubble.play();
+          animateFruit();
+        }
+
+        function animateJump() {
+          new Tween
+            .Tween({jump: 0})
+            .to({jump: Math.PI}, 500)
+            .onUpdate(function (obj) {
+              marker.position.y = 200* Math.sin(obj.jump);
+            })
+            .onComplete(function () {
+              is_jumping = false;
+            })
+            .start();
+        }
+
+        var fruit;
+        function animateFruit() {
+          if (fruit) return;
+
+          fruit = new Mesh(
+            new CylinderGeometry(25, 25, 5, 25),
+            new MeshBasicMaterial({color: 0xFFD700})
+          );
+          fruit.rotation.x = Math.PI/2;
+          marker.add(fruit);
+        
+          new Tween
+            .Tween({
+              height: 150,
+              spin: 0
+            })
+            .to({
+              height: 250,
+              spin: 4
+            }, 500)
+            .onUpdate(function (obj) {
+              fruit.position.y = obj.height;
+              fruit.rotation.z = obj.spin;
+            })
+            .onComplete(function() {
+              marker.remove(fruit);
+              fruit = undefined;
+            })
+            .start();
+        }
+    </script>
+  </body>
+</html>
