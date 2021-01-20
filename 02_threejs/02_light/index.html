@@ -1,0 +1,83 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="/style.css">
+
+    <title>Three JS</title>
+  </head>
+  <body>
+    <script type="module">
+        import { Scene, PerspectiveCamera, WebGLRenderer, MeshBasicMaterial, MeshPhongMaterial, MeshLambertMaterial,
+                SphereGeometry, TorusGeometry, PlaneGeometry, Mesh, DirectionalLight, DirectionalLightHelper, Clock } from './node_modules/three/build/three.module.js';
+        
+        var scene = new Scene();
+        var camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, 0.1 /* near clip */, 1200 /* far clip */);
+        camera.position.z = 500;
+        var renderer = new WebGLRenderer();
+        renderer.shadowMap.enabled = true;
+        renderer.setSize(window.innerWidth * .995, window.innerHeight *.995);
+        document.body.appendChild( renderer.domElement );
+
+        // a sphere with a basic material
+        var sphere_shape = new SphereGeometry(100.);
+        var sphere_cover = new MeshBasicMaterial();
+        sphere_cover.color.setRGB(1., 0., 0.);
+        var sphere = new Mesh(sphere_shape, sphere_cover);
+        sphere.position.set(500, 0, 0);
+        scene.add(sphere);
+
+        // a donut with a phong material
+        var donut_shape = new TorusGeometry(100, 50, 8, 20);
+        var donut_cover = new MeshPhongMaterial();
+        donut_cover.emissive.setRGB(0.8, 0.1, 0.1);
+        donut_cover.specular.setRGB(0.9, 0.9, 0.9);
+        var donut = new Mesh(donut_shape, donut_cover);
+        donut.castShadow = true;
+        donut.receiveShadow = true;
+        scene.add(donut);
+
+        // a light
+        var sunlight = new DirectionalLight();
+        sunlight.intensity = .4;
+        sunlight.position.set(100, 100, 100);
+        sunlight.castShadow = true;
+        sunlight.shadow.camera.far = 1000;
+        scene.add(sunlight);
+        var d = 200;
+        sunlight.shadow.camera.left = -d;
+        sunlight.shadow.camera.right = d;
+        sunlight.shadow.camera.top = d;
+        sunlight.shadow.camera.bottom = -d;
+
+        // the ground
+        var ground_shape = new PlaneGeometry(1000, 1000);
+        var ground_cover = new MeshLambertMaterial();
+        var ground = new Mesh(ground_shape, ground_cover);
+        ground.position.set(0, -200, 0);
+        ground.rotation.set(-Math.PI/2., 0, 0);
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const sunlight_helper = new DirectionalLightHelper( sunlight, 50 );
+        scene.add( sunlight_helper );
+
+        var clock = new Clock();
+
+        function animate()
+        {
+            requestAnimationFrame(animate);
+
+            var time = clock.getElapsedTime();
+            donut.rotation.set(time, 2*time, 0);
+
+            renderer.render(scene, camera);
+        }
+        animate();
+    </script>
+  </body>
+</html>
