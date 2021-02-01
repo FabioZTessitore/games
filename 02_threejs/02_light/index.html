@@ -18,6 +18,7 @@
         var scene = new Scene();
         var camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, 0.1 /* near clip */, 1200 /* far clip */);
         camera.position.z = 500;
+        scene.add(camera);
         var renderer = new WebGLRenderer();
         renderer.shadowMap.enabled = true;
         renderer.setSize(window.innerWidth * .995, window.innerHeight *.995);
