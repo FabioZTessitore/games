@@ -1,0 +1,125 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <link rel="stylesheet" href="/style.css">
+
+    <title>Three JS</title>
+  </head>
+  <body>
+    <script type="module">
+        import { Scene, PerspectiveCamera, WebGLRenderer, MeshPhongMaterial, Geometry, SphereGeometry, Mesh,
+                        PointLight, Clock, Vector3, PointsMaterial, Points, Object3D } from './node_modules/three/build/three.module.js';
+
+        var scene = new Scene();
+        
+        // above_camera
+        var above_camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, .1 /* near clip */, 1e6 /* far clip */);
+        above_camera.position.z = 800;
+        scene.add(above_camera);
+        // earth_camera
+        var earth_camera = new PerspectiveCamera(75 /* FOV, degree */, window.innerWidth / window.innerHeight, .1 /* near clip */, 1e6 /* far clip */);
+        
+        var renderer = new WebGLRenderer();
+        // renderer.shadowMap.enabled = true;
+        renderer.setSize(window.innerWidth * .995, window.innerHeight *.995);
+        document.body.appendChild( renderer.domElement );
+
+        // the sun
+        var sun_cover = new MeshPhongMaterial({ emissive: 0xffd700 });
+        var sun_shape = new SphereGeometry(50, 28, 21);
+        var sun = new Mesh(sun_shape, sun_cover);
+        scene.add(sun);
+
+        // sunlight
+        var sunlight = new PointLight(0xffffff, 5, 1000);
+        sun.add(sunlight);
+
+        // the Earth
+        var earth_orbit_radius = 250;
+        var earth_surface = new MeshPhongMaterial({emissive: 0x1a1a1a, color: 0x0000cd});
+        var earth_planet = new SphereGeometry(20, 20, 15);
+        var earth = new Mesh(earth_planet, earth_surface);
+        // earth orbit
+        var earth_orbit = new Object3D();
+        scene.add(earth_orbit);
+        // add the earth to its orbit
+        earth_orbit.add(earth);
+        earth.position.set(earth_orbit_radius, 0, 0);
+
+        // Moon
+        var moon_orbit_radius = 500;
+        var moon_surface = new MeshPhongMaterial({emissive: 0x1a1a1a, color: 0xffffff});
+        var moon_planet = new SphereGeometry(15, 30, 25);
+        var moon = new Mesh(moon_planet, moon_surface);
+        // moon orbit
+        var moon_orbit = new Object3D();
+        earth.add(moon_orbit);
+        // add the moon to its orbit
+        moon_orbit.add(moon);
+        moon.position.set(0, 100, 0);
+        // and the camera
+        moon_orbit.add(earth_camera);
+        earth_camera.rotation.set(Math.PI/2, 0, 0);
+
+        // stars
+        var stars = new Geometry();
+        while (stars.vertices.length < 1e4) {
+                var lat = Math.PI * Math.random() - Math.PI/2;
+                var lon = 2*Math.PI * Math.random();
+                stars.vertices.push(new Vector3(
+                        1e5 * Math.cos(lon) * Math.cos(lat),
+                        1e5 * Math.sin(lon) * Math.cos(lat),
+                        1e5 * Math.sin(lat)
+                ));
+        }
+        var star_stuff = new PointsMaterial({size: 500});
+        var star_system = new Points(stars, star_stuff);
+        scene.add(star_system);
+
+        var time = 0;
+        var speed = 1;
+        var pause = false;
+
+        var camera = above_camera;
+
+        function animate()
+        {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+
+                if (pause) return;
+
+                time += speed;
+
+                var earth_angle = time * .001;
+                var moon_angle = time * .02;
+                var stars_angle = time * .00001;
+
+                earth_orbit.rotation.set(0, 0, earth_angle);
+                moon_orbit.rotation.set(0, 0, moon_angle);
+                star_system.rotation.z = stars_angle;
+
+        }
+        animate();
+
+        document.addEventListener("keydown", function(event) {
+                var code = event.keyCode;
+                if (code == 67 || code == 32) changeCamera(); // C or SPACE
+                if (code == 80) pause = !pause;               // P
+                if (code == 49) speed = 1;      // 1
+                if (code == 50) speed = 2;      // 2
+                if (code == 51) speed = 10;     // 3
+        });
+
+        function changeCamera () {
+                if (camera == above_camera) camera = earth_camera;
+                else camera = above_camera;
+        }
+    </script>
+  </body>
+</html>
