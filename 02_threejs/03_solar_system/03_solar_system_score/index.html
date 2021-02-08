@@ -1,15 +1,15 @@
 <!doctype html>
 
 <html lang="en">
-  <head>
+	<head>
 		<!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-		
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
 		<link rel="stylesheet" href="/style.css">
-	
-    <script src="http://gamingJS.com/Scoreboard.js"></script>
-		
+
+		<script src="http://gamingJS.com/Scoreboard.js"></script>
+
 		<title>Three JS</title>
 	</head>
 	<body>
@@ -39,7 +39,7 @@
 			// sunlight
 			var sunlight = new PointLight(0xffffff, 5, 1000);
 			sun.add(sunlight);
-			
+
 			// the Earth
 			var earth_orbit_radius = 500;
 			var earth_surface = new MeshPhongMaterial({emissive: 0x1a1a1a, color: 0x0000cd});
@@ -80,13 +80,13 @@
 			var earth_orbit_old = 0;
 			// n. of mars orbits, score 2 point every orbit
 			var mars_orbit_old = 0;
-			
+
 			function animate()
 			{
 				requestAnimationFrame(animate);
 
 				var time = clock.getElapsedTime();
-				
+
 				var earth_angle = time * .8;
 				var mars_angle = time * 1.5;
 				var stars_angle = time * .001;
@@ -110,10 +110,10 @@
 				renderer.render(scene, camera);
 			}
 			animate();
-			
+
 			document.addEventListener("keydown", function(event) {
 				var code = event.keyCode;
 			});
 		</script>
-  </body>
+	</body>
 </html>
