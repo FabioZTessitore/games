@@ -32,7 +32,7 @@
 
 			// the sun
 			var sun_cover = new MeshPhongMaterial({ emissive: 0xffd700 });
-			var sun_shape = new SphereGeometry(50, 28, 21);
+			var sun_shape = new SphereGeometry(100, 28, 21);
 			var sun = new Mesh(sun_shape, sun_cover);
 			scene.add(sun);
 
@@ -41,17 +41,17 @@
 			sun.add(sunlight);
 			
 			// the Earth
-			var earth_orbit_radius = 250;
+			var earth_orbit_radius = 500;
 			var earth_surface = new MeshPhongMaterial({emissive: 0x1a1a1a, color: 0x0000cd});
-			var earth_planet = new SphereGeometry(20, 20, 15);
+			var earth_planet = new SphereGeometry(40, 20, 15);
 			var earth = new Mesh(earth_planet, earth_surface);
 			earth.position.set(earth_orbit_radius, 0, 0);
 			scene.add(earth);
 
 			// the Mars
-			var mars_orbit_radius = 170;
+			var mars_orbit_radius = 340;
 			var mars_surface = new MeshPhongMaterial({emissive: 0x1a1a1a, color: 0xcf4f38});
-			var mars_planet = new SphereGeometry(15, 20, 15);
+			var mars_planet = new SphereGeometry(30, 20, 15);
 			var mars = new Mesh(mars_planet, mars_surface);
 			mars.position.set(mars_orbit_radius, 0, 0);
 			scene.add(mars);
