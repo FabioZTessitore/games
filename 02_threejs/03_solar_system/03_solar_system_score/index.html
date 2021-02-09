@@ -72,14 +72,22 @@
 			scene.add(star_system);
 
 			var scoreboard = new Scoreboard();
-			scoreboard.score();
-
 			var clock = new Clock();
-
+			
 			// n. of earth orbits, score 1 point every orbit
 			var earth_orbit_old = 0;
 			// n. of mars orbits, score 2 point every orbit
 			var mars_orbit_old = 0;
+
+			var points = 0;
+			var earth_pointsSec = 1;
+			var mars_pointsSec = 2;
+			scoreboard.score(points);
+
+			function upgradePointsSec(planet_pointsSec)
+			{
+				return planet_pointsSec *= 1.2;
+			}
 
 			function animate()
 			{
@@ -99,13 +107,16 @@
 				var mars_orbit_new = Math.floor(mars_angle / (2*Math.PI));
 
 				if (earth_orbit_new - earth_orbit_old > 0) {
-					scoreboard.addPoints(1);
 					earth_orbit_old = earth_orbit_new;
+					scoreboard.addPoints(parseInt(earth_pointsSec));
+					eart_pointSec = upgradePointsSec(earth_pointsSec);
 				}
 				if (mars_orbit_new - mars_orbit_old > 0) {
-					scoreboard.addPoints(2);
 					mars_orbit_old = mars_orbit_new;
+					scoreboard.addPoints(parseInt(mars_pointsSec));
+					mars_pointSec = upgradePointsSec(mars_pointsSec);
 				}
+
 
 				renderer.render(scene, camera);
 			}
